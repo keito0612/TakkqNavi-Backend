@@ -2,6 +2,7 @@ package com.takkqnavi.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,8 +19,10 @@ public class RegionController {
 
     private final RegionService regionService;
 
+    /** 地域一覧取得 */
     @GetMapping
-    public List<Region> getRegions() {
-        return regionService.getRegions();
+    public ResponseEntity<List<Region>> getRegions() {
+        List<Region> regions = regionService.getRegions();
+        return ResponseEntity.ok(regions);
     }
 }
