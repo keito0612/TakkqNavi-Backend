@@ -231,7 +231,8 @@ Database
 | category | TEXT | general / para |
 | date | DATE | 開催日 |
 | venue | TEXT | 会場 |
-| region | TEXT | 地域 |
+| address | TEXT | 住所 |
+| region | bigInt | FK → regions |地域|
 | entry_deadline | DATE | 申込期限 |
 | summary | TEXT | 概要 |
 | outline_pdf_url | TEXT | 要項PDF URL |

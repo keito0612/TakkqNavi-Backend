@@ -3,6 +3,7 @@ package com.takkqnavi.seeder;
 import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.takkqnavi.entity.Region;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Order(1) // TournamentSeederより先に実行
 public class RegionSeeder implements CommandLineRunner {
 
     private final RegionRepository regionRepository;
