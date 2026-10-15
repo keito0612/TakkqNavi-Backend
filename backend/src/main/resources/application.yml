@@ -1,6 +1,11 @@
 spring:
   application:
     name: takkq-navi-backend
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
 
 claude:
   api:
@@ -31,6 +36,16 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration/common,classpath:db/migration/h2
+
+storage:
+  local:
+    base-path: ./uploads
+    base-url: http://localhost:8080/uploads
+
+batch:
+  cron:
+    delete-expired: "0 * * * * *"
+    update-tournaments: "0 */5 * * * *"
 
 ---
 spring:
@@ -66,3 +81,11 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration/common,classpath:db/migration/postgresql
+
+storage:
+  r2:
+    endpoint: ${R2_ENDPOINT}
+    access-key: ${R2_ACCESS_KEY}
+    secret-key: ${R2_SECRET_KEY}
+    bucket: ${R2_BUCKET}
+    public-url: ${R2_PUBLIC_URL}

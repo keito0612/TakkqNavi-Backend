@@ -28,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-batch")
 
     // Database
     runtimeOnly("com.h2database:h2")
@@ -43,6 +44,10 @@ dependencies {
 
     // HTTP Client (for Claude API)
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    // AWS S3 SDK (for Cloudflare R2)
+    implementation(platform("software.amazon.awssdk:bom:2.25.0"))
+    implementation("software.amazon.awssdk:s3")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
