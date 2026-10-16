@@ -1,10 +1,11 @@
 package com.takkqnavi.seeder;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
@@ -15,6 +16,7 @@ import com.takkqnavi.entity.Tournament;
 import com.takkqnavi.repository.RegionRepository;
 import com.takkqnavi.repository.TournamentRepository;
 import com.takkqnavi.service.ClaudeApiService;
+import com.takkqnavi.service.StorageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class TournamentSeeder implements CommandLineRunner {
     private final TournamentRepository tournamentRepository;
     private final RegionRepository regionRepository;
     private final ClaudeApiService claudeApiService;
+    private final StorageService storageService;
     private final Environment environment;
 
     @Override
@@ -81,6 +84,12 @@ public class TournamentSeeder implements CommandLineRunner {
 
         LocalDateTime now = LocalDateTime.now();
 
+        // ダミーPDFをアップロード
+        PdfUrls tokyoOpenPdf = uploadDummyPdfs("tokyo-open", "東京オープン");
+        PdfUrls osakaPdf = uploadDummyPdfs("osaka-championship", "大阪選手権");
+        PdfUrls kanagawaPdf = uploadDummyPdfs("kanagawa-para", "神奈川パラ");
+        PdfUrls tokyoJuniorPdf = uploadDummyPdfs("tokyo-junior", "東京ジュニア");
+
         List<Tournament> tournaments = List.of(
                 Tournament.builder()
                         .name("第50回東京オープン卓球大会")
@@ -91,8 +100,8 @@ public class TournamentSeeder implements CommandLineRunner {
                         .region(tokyo)
                         .entryDeadline(LocalDate.now().plusDays(14))
                         .summary("東京都卓球連盟主催のオープン大会です。")
-                        .outlinePdfUrl("https://example.com/pdf/tokyo-open-outline.pdf")
-                        .entryPdfUrl("https://example.com/pdf/tokyo-open-entry.pdf")
+                        .outlinePdfUrl(tokyoOpenPdf.outline())
+                        .entryPdfUrl(tokyoOpenPdf.entry())
                         .createdAt(now)
                         .updatedAt(now)
                         .build(),
@@ -105,8 +114,8 @@ public class TournamentSeeder implements CommandLineRunner {
                         .region(osaka)
                         .entryDeadline(LocalDate.now().plusDays(30))
                         .summary("大阪府卓球協会主催の選手権大会です。")
-                        .outlinePdfUrl("https://example.com/pdf/osaka-championship-outline.pdf")
-                        .entryPdfUrl("https://example.com/pdf/osaka-championship-entry.pdf")
+                        .outlinePdfUrl(osakaPdf.outline())
+                        .entryPdfUrl(osakaPdf.entry())
                         .createdAt(now)
                         .updatedAt(now)
                         .build(),
@@ -119,8 +128,8 @@ public class TournamentSeeder implements CommandLineRunner {
                         .region(kanagawa)
                         .entryDeadline(LocalDate.now().plusDays(45))
                         .summary("パラ卓球の普及を目的とした大会です。")
-                        .outlinePdfUrl("https://example.com/pdf/kanagawa-para-outline.pdf")
-                        .entryPdfUrl("https://example.com/pdf/kanagawa-para-entry.pdf")
+                        .outlinePdfUrl(kanagawaPdf.outline())
+                        .entryPdfUrl(kanagawaPdf.entry())
                         .createdAt(now)
                         .updatedAt(now)
                         .build(),
@@ -133,8 +142,8 @@ public class TournamentSeeder implements CommandLineRunner {
                         .region(tokyo)
                         .entryDeadline(LocalDate.now().plusDays(7))
                         .summary("中学生・高校生を対象としたジュニア大会です。")
-                        .outlinePdfUrl("https://example.com/pdf/tokyo-junior-outline.pdf")
-                        .entryPdfUrl("https://example.com/pdf/tokyo-junior-entry.pdf")
+                        .outlinePdfUrl(tokyoJuniorPdf.outline())
+                        .entryPdfUrl(tokyoJuniorPdf.entry())
                         .createdAt(now)
                         .updatedAt(now)
                         .build()
@@ -143,5 +152,37 @@ public class TournamentSeeder implements CommandLineRunner {
         tournamentRepository.saveAll(tournaments);
 
         log.info("Seeded {} dev tournaments.", tournaments.size());
+    }
+
+    /** PDF URL ペア */
+    private record PdfUrls(String outline, String entry) {}
+
+    /**
+     * 大会要項と申込用紙のダミーPDFをアップロード
+     */
+    private PdfUrls uploadDummyPdfs(String baseName, String title) {
+        String outline = uploadDummyPdf("tournaments/" + baseName + "-outline.pdf", title + "大会要項");
+        String entry = uploadDummyPdf("tournaments/" + baseName + "-entry.pdf", title + "申込用紙");
+        return new PdfUrls(outline, entry);
+    }
+
+    /**
+     * ダミーPDFをアップロードしてURLを返す
+     */
+    private String uploadDummyPdf(String path, String title) {
+        String dummyContent = "%PDF-1.4\n" +
+                "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n" +
+                "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n" +
+                "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>\nendobj\n" +
+                "trailer\n<< /Root 1 0 R >>\n%%EOF\n" +
+                "% Dummy PDF: " + title;
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                dummyContent.getBytes(StandardCharsets.UTF_8)
+        );
+
+        String url = storageService.upload(path, inputStream, "application/pdf");
+        log.info("Uploaded dummy PDF: {} -> {}", path, url);
+        return url;
     }
 }

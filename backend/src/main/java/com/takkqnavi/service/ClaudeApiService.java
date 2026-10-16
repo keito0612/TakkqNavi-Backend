@@ -69,7 +69,7 @@ public class ClaudeApiService {
     /**
      * 指定地域の大会情報を取得
      */
-    private List<Tournament> fetchTournamentsForRegion(Region region, int months) {
+    public List<Tournament> fetchTournamentsForRegion(Region region, int months) {
         String prompt = buildPrompt(region.getName(), months);
 
         Map<String, Object> requestBody = Map.of(
